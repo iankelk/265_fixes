@@ -67,6 +67,7 @@ struct settings {
     float gets_skewness;
     float gets_misses_ratio;
     int ranges;
+    int max_range_size;
     char uniform_ranges; /* true (uniform) or false (gaussian) */
     int deletes;
     int external_puts;
@@ -86,6 +87,7 @@ void initialize_settings(struct settings *s) {
     s->gets_skewness         = 0;
     s->gets_misses_ratio     = 0.5;
     s->ranges                = 0;
+    s->max_range_size        = 0;
     s->deletes               = 0;
     s->external_puts         = 0;
     s->seed                  = 13141;
@@ -108,6 +110,7 @@ void usage(char * binary) {
         --gets-skewness [skewness (0-1) of get operations]\n\
         --gets-misses-ratio [empty result queries ratio]\n\
         --ranges [number of range operations]\n\
+        --max-range-size [maximum possible size of ranges]\n\
         --uniform-ranges *use uniform ranges (default)*\n\
         --gaussian-ranges *use gaussian ranges*\n\
         --deletes [number of delete operations]\n\
@@ -115,6 +118,19 @@ void usage(char * binary) {
         --seed [random number generator seed]\n\
         --help\n\
 \n\n", binary);
+}
+
+int next_operation(double puts_percent, double gets_percent, double ranges_percent, double deletes_percent) {
+    double r = (double)rand() / (double)RAND_MAX;
+    if (r < puts_percent) {
+        return OPERATION_PUT;
+    } else if (r < puts_percent + gets_percent) {
+        return OPERATION_GET; 
+    } else if (r < puts_percent + gets_percent + ranges_percent) {
+        return OPERATION_RANGE; 
+    } else {
+        return OPERATION_DELETE; 
+    }
 }
 
 /**
@@ -131,6 +147,7 @@ void parse_settings(int argc, char **argv, struct settings *s) {
             {"gets-skewness",    required_argument,  0, 'G'},
             {"gets-misses-ratio",required_argument,  0, 't'},
             {"ranges",           required_argument,  0, 'r'},
+            {"max-range-size",   required_argument,  0, 'b'},
             {"uniform-ranges",   no_argument,        0, 'u'},
             {"gaussian-ranges",  no_argument,        0, 'n'},
             {"deletes",          required_argument,  0, 'd'},
@@ -159,6 +176,9 @@ void parse_settings(int argc, char **argv, struct settings *s) {
                 break;
             case 'r':
                 s->ranges = atoi(optarg);
+                break;
+            case 'b':
+                s->max_range_size = atoi(optarg);
                 break;
             case 'd':
                 s->deletes = atoi(optarg);
@@ -255,12 +275,13 @@ void generate_workload(struct settings *s) {
     ///    INITIALIZE NUMBER POOLS    ///
     /////////////////////////////////////
     // Initialize random generator
-    gsl_rng_default_seed = s->seed;
+    //gsl_rng_default_seed = s->seed; // Remove this line
     const gsl_rng_type *T;
     gsl_rng *r;
     gsl_rng_env_setup();
     T = gsl_rng_default;
     r = gsl_rng_alloc(T);
+    gsl_rng_set(r, s->seed); // Add this line to set the seed for the random generator
 
     // Buffer of previous puts (for non empty gets)
     int old_puts_pool_max_size;
@@ -306,8 +327,20 @@ void generate_workload(struct settings *s) {
           current_gets < s->gets || 
           current_ranges < s->ranges) 
     {
+        int remaining_puts    = s->puts    - current_puts;
+        int remaining_gets    = s->gets    - current_gets;
+        int remaining_ranges  = s->ranges  - current_ranges;
+        int remaining_deletes = s->deletes - current_deletes;
+
+        int remaining_total = remaining_puts + remaining_gets + remaining_ranges + remaining_deletes;
+
+        double puts_percent    = (s->puts    == 0) ? 0 : (double)remaining_puts   / remaining_total;
+        double gets_percent    = (s->gets    == 0) ? 0 : (double)remaining_gets   / remaining_total;
+        double ranges_percent  = (s->ranges  == 0) ? 0 : (double)remaining_ranges / remaining_total;
+        double deletes_percent = (s->deletes == 0) ? 0 : (double)remaining_deletes / remaining_total;
+
         // Decide a random operation
-        int operation = rand() % 4;
+        int operation = next_operation(puts_percent, gets_percent, ranges_percent, deletes_percent);
 
         // TODO: Check if this operation has remaining else continue.
         switch(operation) {
@@ -381,11 +414,10 @@ void generate_workload(struct settings *s) {
             ////////////////// GETS //////////////////
             KEY_t k;
             // With a probability use a new key as a query
-            if((rand()%10) > (s->gets_skewness*10) || 
-                old_gets_pool_count == 0) {
+            if((((float)rand()) / RAND_MAX > s->gets_skewness) || old_gets_pool_count == 0) {
                 // With a probability use one of the 
                 // previously inserted data as a query
-                if((rand()%10) > (s->gets_misses_ratio*10)) {
+                if(((float)rand()) / RAND_MAX > s->gets_misses_ratio) {
                     k = old_puts_pool[rand() % old_puts_pool_count];
                 }
                 // Or issue a completely random query 
@@ -418,16 +450,37 @@ void generate_workload(struct settings *s) {
                 continue;
 
             //////////////// RANGES ////////////////// 
-            // TODO: USE DIFFERENT DISTRIBUTIONS
             KEY_t a;
             KEY_t b;
+            KEY_t range_size;
+
             if(s->uniform_ranges) {
-                a = GEN_RANDOM_KEY_UNIFORM(r);
-                b = GEN_RANDOM_KEY_UNIFORM(r);
+                if (s->max_range_size > 0) {
+                    a = GEN_RANDOM_KEY_UNIFORM(r);
+                    // Pick a random number between +/- s->max_range_size. +1 to avoid zero range size
+                    range_size = gsl_rng_uniform_int(r, 2*s->max_range_size + 1) - s->max_range_size;
+                    b = a + range_size;
+                    if (b > KEY_MAX) b = KEY_MAX;
+                    if (b < KEY_MIN) b = KEY_MIN;
+                }
+                else {
+                    a = GEN_RANDOM_KEY_UNIFORM(r);
+                    b = GEN_RANDOM_KEY_UNIFORM(r);
+                }
             }
             else {
-                a = GEN_RANDOM_KEY_GAUSS(r);
-                b = GEN_RANDOM_KEY_GAUSS(r);
+                if (s->max_range_size > 0) {
+                    a = GEN_RANDOM_KEY_GAUSS(r);
+                    // Pick a random number between +/- s->max_range_size. +1 to avoid zero range size
+                    range_size = gsl_rng_uniform_int(r, 2*s->max_range_size + 1) - s->max_range_size;
+                    b = a + range_size;
+                    if (b > KEY_MAX) b = KEY_MAX;
+                    if (b < KEY_MIN) b = KEY_MIN;
+                }
+                else {
+                    a = GEN_RANDOM_KEY_GAUSS(r);
+                    b = GEN_RANDOM_KEY_GAUSS(r);
+                }
             }
 
             if(a < b) {

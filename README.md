@@ -1,7 +1,6 @@
-# Harvard CS265 - Big Data Systems #
+# Workload generator and evaluate.py bug fixes and improvements#
 ---
-*This repository contains the code of a workload generator for an LSM tree.
-It follows the DSL specified for the systems project of CS265.*
+*This repository contains fixes for the code of a workload generator and workload evaluator for an LSM tree.*
 
 *More information can be found [here](http://daslab.seas.harvard.edu/classes/cs265/project.html).*
 
@@ -33,13 +32,15 @@ You can now run the following to see all available options:
 ./generator --help
 ```
 
-![Screen Shot 2017-01-24 at 1.21.17 PM.png](https://bitbucket.org/repo/9de5E4/images/2315274117-Screen%20Shot%202017-01-24%20at%201.21.17%20PM.png)
+![Screen shot of generator](./img/generator.jpg)
+
+The `max-range-size` is useful so that your ranges don't become massive as the number of keys in the database grows. For example, if you don't use `max-range-size` and you insert 1 billion keys into the database, it is possible that some ranges could return hundreds of millions of key value pairs.
 
 ### Examples ###
-**Query 1:** Insert 100000 keys, perform 1000 gets and 10 range queries and 20 deletes. The amount of misses of gets should be approximately 30% (--gets-misses-ratio) and 20% of the queries should be repeated (--gets-skewness).
+**Query 1:** Insert 100000 keys, perform 1000 gets and 10 range queries (with a maximum range size of 1000 elements) and 20 deletes. The amount of misses of gets should be approximately 30% (--gets-misses-ratio) and 20% of the queries should be repeated (--gets-skewness).
 
 ```
-./generator --puts 100000 --gets 1000 --ranges 10 --deletes 20 --gets-misses-ratio 0.3 --gets-skewness 0.2 > workload.txt
+./generator --puts 100000 --gets 1000 --ranges 10 --deletes 20 --gets-misses-ratio 0.3 --gets-skewness 0.2 --max-range-size 1000 > workload.txt
 ```
 
 **Query 2:** Same as above but store the data in external (.dat) binary files.
@@ -65,11 +66,13 @@ You can now run the following to see all available options:
 You can execute a workload and see some basic statistics about it, using the ```evaluate.py``` python script.
 
 ### Dependencies ###
-You need to install the [blist](https://pypi.python.org/pypi/blist/?) library.
+You need to install the [sortedcontainers](https://pypi.org/project/sortedcontainers/) library.
 
-Most platforms: ```pip install blist```
+Most platforms: ```pip install sortedcontainers```
 
-*Note: In Fedora Linux, you might need to install it using: ```dnf install python-blist```.*
+*Note: In Fedora Linux, you might need to install it using: ```dnf install python-sortedcontainers```.*
+
+*Note: In previous versions, `evaluate.py` used a library called `blist`, however that library has not been maintained since 2014 and is not compatible with Python 3.*
 
 ### Running ###
 
@@ -78,4 +81,8 @@ Run as follows:
 python evaluate.py workload.txt
 ```
 
-**Note: For extra options etc, please look inside the script.**
+### Help screenshot
+![Screen shot of generator](./img/evaluate_help.jpg)
+
+### Example of results of evaluating workload
+![Screen shot of generator](./img/evaluate_results.jpg)

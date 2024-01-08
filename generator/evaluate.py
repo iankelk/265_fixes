@@ -11,7 +11,8 @@
 import sys
 import time
 import struct
-from blist import sorteddict, sortedlist
+import argparse
+from sortedcontainers import SortedDict, SortedList
 
 # ------------------------------------------------
 #                     Stats
@@ -49,7 +50,7 @@ def log(action, verbose):
     elif action == "LOAD":
         loads += 1
     if verbose:
-        print action
+        print(action)
 
 # Printing stats
 def print_stats(time_elapsed):
@@ -60,30 +61,43 @@ def print_stats(time_elapsed):
     global successful_deletes
     global failed_deletes
     global loads  
-    print "------------------------------------"
-    print "PUTS", puts
-    print "SUCCESFUL_GETS", successful_gets
-    print "FAILED_GETS", failed_gets
-    print "RANGES", ranges
-    print "SUCCESSFUL_DELS", successful_deletes
-    print "FAILED_DELS", failed_deletes
-    print "LOADS", loads
-    print "TIME_ELAPSED", time_elapsed
-    print "------------------------------------"
+    print("------------------------------------")
+    print("PUTS", puts)
+    print("SUCCESFUL_GETS", successful_gets)
+    print("FAILED_GETS", failed_gets)
+    print("RANGES", ranges)
+    print("SUCCESSFUL_DELS", successful_deletes)
+    print("FAILED_DELS", failed_deletes)
+    print("LOADS", loads)
+    print("TIME_ELAPSED", time_elapsed)
+    print("------------------------------------")
 
 # ------------------------------------------------
 #                   Main function
 # ------------------------------------------------
 if __name__ == "__main__":
+
+    # Set up argument parser
+    parser = argparse.ArgumentParser(description='LSM TREE WORKLOAD EVALUATOR')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output showing all commands')
+    parser.add_argument('-s', '--show-output', action='store_true', help='Show all values returned from the workload')
+    parser.add_argument('filename', nargs='?', help='Filename of the workload file')
+    args = parser.parse_args()
+
+    # Check if filename is provided
+    if not args.filename:
+        parser.print_help()
+        sys.exit(1)
+
     # Options
-    verbose = False
-    show_output = True
+    verbose = args.verbose
+    show_output = args.show_output
 
     # Initialize sorted dictionary (key value store)
-    db = sorteddict({})
+    db = SortedDict({})
 
     # Open file
-    f = open(sys.argv[1])
+    f = open(args.filename)
 
     # Start reading workload
     start = time.time()
@@ -100,29 +114,29 @@ if __name__ == "__main__":
                 try:
                     val = db[key]
                     if show_output:
-                        print val
+                        print(val)
                     log("SUCCESFUL_GET", verbose)
                 except:
                     if show_output:
-                        print ""
+                        print("")
                     log("FAILED_GET", verbose)
             # RANGE
             if line[0] == "r":
                 (range_start, range_end) = map(int, line.split(" ")[1:3])
-                sorted_keys = sortedlist(db.keys())
+                sorted_keys = SortedList(db.keys())
                 left_index = sorted_keys.bisect_left(range_start)
                 right_index = sorted_keys.bisect_left(range_end)
                 valid_keys = sorted_keys[left_index:right_index]
                 valid_vals = map(lambda x: db[x], valid_keys)
-                res = zip(valid_keys, valid_vals)
+                res = list(zip(valid_keys, valid_vals))
                 if show_output:
-                    print " ".join(map(lambda x: str(x[0])+":"+str(x[1]), res))
+                    print(" ".join(map(lambda x: str(x[0])+":"+str(x[1]), res)))
                 log("RANGE", verbose)
             # DELETE
             if line[0] == "d":
                 key = int(line.split(" ")[1])
                 try:
-                    del db[key] 
+                    del db[key]
                     log("SUCCESSFUL_DELETE", verbose)
                 except:
                     log("FAILED_DELETE", verbose)
@@ -151,5 +165,3 @@ if __name__ == "__main__":
 
     # Closing file
     f.close()
-
-
