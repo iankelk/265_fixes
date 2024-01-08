@@ -25,6 +25,9 @@ successful_deletes = 0
 failed_deletes = 0
 loads = 0
 time_elapsed = 0
+non_empty_ranges = 0
+smallest_range = float('inf')  # Set to infinity initially
+largest_range = 0
 
 # Logging events
 def log(action, verbose):
@@ -66,6 +69,9 @@ def print_stats(time_elapsed):
     print("SUCCESFUL_GETS", successful_gets)
     print("FAILED_GETS", failed_gets)
     print("RANGES", ranges)
+    print("NON_EMPTY_RANGES", non_empty_ranges)
+    print("SMALLEST_NON_EMPTY_RANGE_NUM_ELEMENTS", smallest_range if smallest_range != float('inf') else 0)
+    print("LARGEST_RANGE_NUM_ELEMENTS", largest_range)
     print("SUCCESSFUL_DELS", successful_deletes)
     print("FAILED_DELS", failed_deletes)
     print("LOADS", loads)
@@ -129,6 +135,11 @@ if __name__ == "__main__":
                 valid_keys = sorted_keys[left_index:right_index]
                 valid_vals = map(lambda x: db[x], valid_keys)
                 res = list(zip(valid_keys, valid_vals))
+                range_size = len(res)
+                if range_size > 0:
+                    non_empty_ranges += 1
+                    smallest_range = min(smallest_range, range_size)
+                    largest_range = max(largest_range, range_size)
                 if show_output:
                     print(" ".join(map(lambda x: str(x[0])+":"+str(x[1]), res)))
                 log("RANGE", verbose)
