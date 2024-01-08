@@ -88,5 +88,5 @@ python evaluate.py [-h] [-v] [-s] [workload.txt]
 ### Help screenshot
 ![Screen shot of evaluator help](./img/evaluate_help.jpg)
 
-### Example of results of evaluating workload
+### Example of results of evaluating workload generated above
 ![Screen shot of evaluator results](./img/evaluate_results.jpg)

@@ -7,7 +7,7 @@
 ## Workload and Data Generator ##
 ---
 
-### generator.c ###
+## generator.c ##
 
 #### Issues: ####
 
@@ -53,7 +53,7 @@ if((((float)rand()) / RAND_MAX > s->gets_skewness) || old_gets_pool_count == 0) 
 ### Example of results of generating workload
 ![Screen shot of generator results](./img/generator_results.jpg)
 
-### evaluate.py ###
+## evaluate.py ##
 
 ## Evaluating a Workload ##
 ---
@@ -96,5 +96,5 @@ python evaluate.py [-h] [-v] [-s] [workload.txt]
 ### Help screenshot
 ![Screen shot of evaluator help](./img/evaluate_help.jpg)
 
-### Example of results of evaluating workload
+### Example of results of evaluating workload generated above
 ![Screen shot of evaluator results](./img/evaluate_results.jpg)
