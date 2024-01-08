@@ -78,7 +78,7 @@ Most platforms: ```pip install sortedcontainers```
 
 Run as follows:
 ```
-python evaluate.py workload.txt
+python evaluate.py [-h] [-v] [-s] [workload.txt]
 ```
 
 ### Help screenshot

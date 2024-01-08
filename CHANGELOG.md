@@ -43,7 +43,7 @@ if((((float)rand()) / RAND_MAX > s->gets_skewness) || old_gets_pool_count == 0) 
 ![Screen shot of generator](./img/generator.jpg)
 
 ### Example ###
-**Query:** Insert 100000 keys, perform 1000 gets and 10 range queries (with a maximum range size of 1000 elements) and 20 deletes. The amount of misses of gets should be approximately 30% (--gets-misses-ratio) and 20% of the queries should be repeated (--gets-skewness).
+**Query:** Insert 100000 keys, perform 1000 gets and 10 range queries (with a maximum range size of 1000 elements) and 20 deletes. The amount of misses of gets should be approximately 30% (`--gets-misses-ratio`) and 20% of the queries should be repeated (`--gets-skewness`).
 
 ```
 ./generator --puts 100000 --gets 1000 --ranges 10 --deletes 20 --gets-misses-ratio 0.3 --gets-skewness 0.2 --max-range-size 1000 > workload.txt
@@ -78,11 +78,15 @@ Most platforms: ```pip install sortedcontainers```
 
 2. The two flags, `verbose` and `show_output` have been changed to command-line arguments. To do this, `import argparse` was added to the top of the file, but it does not require any additional libraries to be installed.
 
+#### Improvements: ####
+
+The evaluation report now also displayes the number of non-empty ranges found, as well as the smallest and largest ranges (by number of elements) found.
+
 ### Running ###
 
 Run as follows:
 ```
-python evaluate.py workload.txt
+python evaluate.py [-h] [-v] [-s] [workload.txt]
 ```
 
 ### Help screenshot
