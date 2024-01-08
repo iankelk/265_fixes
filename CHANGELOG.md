@@ -54,6 +54,8 @@ TIME_ELAPSED 0.05323910713195801
 
 4. The RANGE generation is very problematic. It generates 2 keys within the entire space of `KEY_MAX 2147483647` to `KEY_MIN -2147483647`. As a result, in a database with a billion entries, the RANGE queries would start returning ridiculously large ranges that could theoretically reach a billion entries (in practice it was still in the millions). Even when I ran 1 million PUTs and 100 RANGEs and then shuffled it to avoid the front-loading mentioned in problem 2 above, it would return a total of almost 18 million entries since each of the 100 ranges was MASSIVE.
 
+While it's good to be able to test for such situations with ranges in the millions, it's much better to have some control over this behaviour and be able to tweak the workload generator so that it can generate smaller ranges as well, despite having a very large number of entries in the database.
+
 #### Fixes: ####
 
 1. `--seed` has been fixed and now generates different workloads based on the seed.
@@ -77,7 +79,7 @@ if((((float)rand()) / RAND_MAX > s->gets_skewness) || old_gets_pool_count == 0) 
 ![Screen shot of generator help](./img/generator_help.jpg)
 
 ### Example ###
-**Query:** Insert 100000 keys, perform 1000 gets and 10 range queries (with a maximum range size of 1000 elements) and 20 deletes. The amount of misses of gets should be approximately 30% (`--gets-misses-ratio`) and 20% of the queries should be repeated (`--gets-skewness`).
+**Query:** Insert 100000 keys, perform 1000 gets and 10 range queries (with a maximum range size of 100000 entries) and 20 deletes. The amount of misses of gets should be approximately 30% (`--gets-misses-ratio`) and 20% of the queries should be repeated (`--gets-skewness`).
 
 ```
 ./generator --puts 100000 --gets 1000 --ranges 10 --deletes 20 --gets-misses-ratio 0.3 --gets-skewness 0.2 --max-range-size 100000 > workload.txt
@@ -117,7 +119,7 @@ Most platforms: ```pip install sortedcontainers```
 
 #### Improvements: ####
 
-The evaluation report now also displayes the number of non-empty ranges found, as well as the smallest and largest ranges (by number of elements) found.
+The evaluation report now also displayes the number of non-empty ranges found, as well as the smallest and largest ranges (by number of entries) found.
 
 ### Running ###
 

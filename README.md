@@ -35,10 +35,10 @@ You can now run the following to see all available options:
 ### Help screenshot
 ![Screen shot of generator help](./img/generator_help.jpg)
 
-The `max-range-size` is useful so that your ranges don't become massive as the number of keys in the database grows. For example, if you don't use `max-range-size` and you insert 1 billion keys into the database, it is possible that some ranges could return hundreds of millions of key value pairs. Conversely, if there aren't enough entries in the database, a `max-range-size` that is too small will return mostly empty ranges. It's best to only begin using it once you're working with databases beyond a large size. This will become evident as your database grows and the size of the returned ranges begin exceeding thousands of elements.
+The `max-range-size` is useful so that your ranges don't become massive as the number of keys in the database grows. For example, if you don't use `max-range-size` and you insert 1 billion keys into the database, it is possible that some ranges could return hundreds of millions of key value pairs. Conversely, if there aren't enough entries in the database, a `max-range-size` that is too small will return mostly empty ranges. It's best to only begin using it once you're working with databases beyond a large size. This will become evident as your database grows and the size of the returned ranges begin exceeding thousands of entries.
 
 ### Examples ###
-**Query 1:** Insert 100000 keys, perform 1000 gets and 10 range queries (with a maximum range size of `100000` elements) and 20 deletes. The amount of misses of gets should be approximately 30% (`--gets-misses-ratio`) and 20% of the queries should be repeated (`--gets-skewness`).
+**Query 1:** Insert 100000 keys, perform 1000 gets and 10 range queries (with a maximum range size of `100000` entries) and 20 deletes. The amount of misses of gets should be approximately 30% (`--gets-misses-ratio`) and 20% of the queries should be repeated (`--gets-skewness`).
 
 ```
 ./generator --puts 100000 --gets 1000 --ranges 10 --deletes 20 --gets-misses-ratio 0.3 --gets-skewness 0.2 --max-range-size 100000 > workload.txt
