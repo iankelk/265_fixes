@@ -32,7 +32,8 @@ You can now run the following to see all available options:
 ./generator --help
 ```
 
-![Screen shot of generator](./img/generator.jpg)
+### Help screenshot
+![Screen shot of generator help](./img/generator_help.jpg)
 
 The `max-range-size` is useful so that your ranges don't become massive as the number of keys in the database grows. For example, if you don't use `max-range-size` and you insert 1 billion keys into the database, it is possible that some ranges could return hundreds of millions of key value pairs. Conversely, if there aren't enough entries in the database, a `max-range-size` that is too small will return mostly empty ranges. It's best to only begin using it once you're working with databases beyond a large size. This will become evident as your database grows and the size of the returned ranges begin exceeding thousands of elements.
 
@@ -42,6 +43,9 @@ The `max-range-size` is useful so that your ranges don't become massive as the n
 ```
 ./generator --puts 100000 --gets 1000 --ranges 10 --deletes 20 --gets-misses-ratio 0.3 --gets-skewness 0.2 --max-range-size 100000 > workload.txt
 ```
+
+### Example of results of evaluating workload
+![Screen shot of generator results](./img/generator_results.jpg)
 
 **Query 2:** Same as above but store the data in external (.dat) binary files.
 ```
@@ -82,7 +86,7 @@ python evaluate.py [-h] [-v] [-s] [workload.txt]
 ```
 
 ### Help screenshot
-![Screen shot of generator](./img/evaluate_help.jpg)
+![Screen shot of evaluator help](./img/evaluate_help.jpg)
 
 ### Example of results of evaluating workload
-![Screen shot of generator](./img/evaluate_results.jpg)
+![Screen shot of evaluator results](./img/evaluate_results.jpg)

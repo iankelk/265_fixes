@@ -40,14 +40,18 @@ if((((float)rand()) / RAND_MAX > s->gets_skewness) || old_gets_pool_count == 0) 
 
 ## Here is a screenshot of the modified help screen which includes the `--max-range-size` option.
 
-![Screen shot of generator](./img/generator.jpg)
+### Help screenshot
+![Screen shot of generator help](./img/generator_help.jpg)
 
 ### Example ###
 **Query:** Insert 100000 keys, perform 1000 gets and 10 range queries (with a maximum range size of 1000 elements) and 20 deletes. The amount of misses of gets should be approximately 30% (`--gets-misses-ratio`) and 20% of the queries should be repeated (`--gets-skewness`).
 
 ```
-./generator --puts 100000 --gets 1000 --ranges 10 --deletes 20 --gets-misses-ratio 0.3 --gets-skewness 0.2 --max-range-size 1000 > workload.txt
+./generator --puts 100000 --gets 1000 --ranges 10 --deletes 20 --gets-misses-ratio 0.3 --gets-skewness 0.2 --max-range-size 100000 > workload.txt
 ```
+
+### Example of results of generating workload
+![Screen shot of generator results](./img/generator_results.jpg)
 
 ### evaluate.py ###
 
@@ -90,7 +94,7 @@ python evaluate.py [-h] [-v] [-s] [workload.txt]
 ```
 
 ### Help screenshot
-![Screen shot of generator](./img/evaluate_help.jpg)
+![Screen shot of evaluator help](./img/evaluate_help.jpg)
 
 ### Example of results of evaluating workload
-![Screen shot of generator](./img/evaluate_results.jpg)
+![Screen shot of evaluator results](./img/evaluate_results.jpg)
