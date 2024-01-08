@@ -11,13 +11,46 @@
 
 #### Issues: ####
 
-The generator.c from the repo has several problems:
+The generator.c from the [original repo](https://bitbucket.org/HarvardDASlab/cs265-sysproj/src/master/) has several problems:
 
 1. The `--seed` argument doesn't work, which means the workloads generated are identical. This is a problem if you need different workloads for testing concurrent clients.
 
 2. It front-loads everything. If you do 1,000,000 PUTs and 100 GETs, those 100 GETs will be mixed in with the first 100 PUTs, and then ... nothing but 9,999,800 PUTs after that.
 
-3. The gets-misses-ratio option is always off by 10%. The default behavior was supposed to be 0.5, but it actually defaults to 0.6 misses to 0.4 gets. You can confirm this with the updated version of `evaluate.py`
+3. The gets-misses-ratio option is always off by 10%-20%. The default behavior was supposed to be 0.5, but in the example below it actually achieves 323 misses to 677 gets, which would be a gets-misses ratio of 677/(323+677) = 0.677 or roughly 0.7. You can confirm this with the updated version of `evaluate.py`
+
+Here is an example of generator output using the original `generator.c` without fixes:
+
+```sh
++---------- CS 265 ----------+
+| WORKLOAD INFO              |
++----------------------------+
+| initial-seed: 13141
+| puts-total: 10000
+| gets-total: 1000
+| get-skewness: 0.0000
+| ranges: 1000
+| range distribution: uniform
+| deletes: 100
+| gets-misses-ratio: 0.5000
++----------------------------+
+```
+
+And the output from `evaluate.py` which shows the `get-misses-ratio` is *actually* `0.677` and not `0.5`
+
+```sh
+cs265 % python evaluate.py workload
+------------------------------------
+PUTS 10000
+SUCCESFUL_GETS 323
+FAILED_GETS 677
+RANGES 1000
+SUCCESSFUL_DELS 49
+FAILED_DELS 51
+LOADS 0
+TIME_ELAPSED 0.05323910713195801
+------------------------------------
+```
 
 4. The RANGE generation is very problematic. It generates 2 keys within the entire space of `KEY_MAX 2147483647` to `KEY_MIN -2147483647`. As a result, in a database with a billion entries, the RANGE queries would start returning ridiculously large ranges that could theoretically reach a billion entries (in practice it was still in the millions). Even when I ran 1 million PUTs and 100 RANGEs and then shuffled it to avoid the front-loading mentioned in problem 2 above, it would return a total of almost 18 million entries since each of the 100 ranges was MASSIVE.
 
