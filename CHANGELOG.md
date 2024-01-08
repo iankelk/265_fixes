@@ -24,7 +24,7 @@ The generator.c from the [original repo](https://bitbucket.org/HarvardDASlab/cs2
 
 2. It front-loads everything. If you do 1,000,000 PUTs and 100 GETs, those 100 GETs will be mixed in with the first 100 PUTs, and then ... nothing but 9,999,800 PUTs after that.
 
-3. The gets-misses-ratio option is always off by 10%-20%. The default behavior was supposed to be 0.5, but in the example below it actually achieves 323 misses to 677 gets, which would be a gets-misses ratio of 677/(323+677) = 0.677 or roughly 0.7. You can confirm this with the updated version of `evaluate.py`
+3. The `gets-misses-ratio` option is always off by 10%-20%. The default behavior was supposed to be 0.5, but in the example below it actually achieves 323 misses to 677 gets, which would be a gets-misses ratio of 677/(323+677) = 0.677 or roughly 0.7. You can confirm this with the updated version of `evaluate.py`
 
 Here is an example of generator output using the original `generator.c` without fixes:
 
