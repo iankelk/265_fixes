@@ -7,6 +7,14 @@
 ## Workload and Data Generator ##
 ---
 
+## The files that have been modified are `generator.c` and `evaluate.py`
+
+To view the diffs of the commits to see all bug fixes and improvements:
+
+* [generator.c](https://github.com/iankelk/265_fixes/compare/bdd8a48..a6b8414#diff-251a3fd6dc66b5af84694550202afdee564ef49879189e0479ae59a5ec1126fb)
+* [evaluate.py]
+(https://github.com/iankelk/265_fixes/compare/bdd8a48..a6b8414#diff-9b330cc5f884f89be6a567df8a3dce69b84eb873eaeb37dbe079f9ab263a0932)
+
 ## generator.c ##
 
 #### Issues: ####
