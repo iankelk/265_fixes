@@ -140,3 +140,12 @@ python evaluate.py [-h] [-v] [-s] [workload.txt]
 
 ### Example of results of evaluating workload generated above
 ![Screen shot of evaluator results](./img/evaluate_results.jpg)
+
+## Project 0: Implementing a Hash Table Recommendation
+
+### 4 Running out of Capacity
+
+There is a line in this section which is a bit misleading, which says to "deallocate the original hash table to ensure no memory leaks have taken place" after creating a new, larger array. When I completed this project, I took this literally, and deallocated the entire hash table object when creating a new one, when in fact I should have only deallocated the array. I would suggest a small change to have it read "deallocate the original **hash table's array** to ensure no memory leaks have taken place"
+
+ ![Screen shot 4: Running out of Capacity](./img/hash_table.jpg)
+
